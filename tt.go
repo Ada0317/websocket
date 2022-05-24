@@ -19,7 +19,7 @@ func main() {
 	//	Out:          os.Stderr,
 	//	Formatter:    new(TextFormatter),
 	//	Hooks:        make(LevelHooks),
-	//	Level:        InfoLevel,
+	//	Level:        InfoLevel,dfsf
 	//	ExitFunc:     os.Exit,
 	//	ReportCaller: false,
 	//}
