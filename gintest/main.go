@@ -5,6 +5,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
+	"io"
+	"os"
 )
 
 func main() {
@@ -42,6 +44,7 @@ func main() {
 	router.DELETE("/ping", func(c *gin.Context) { //实例 接受get请求
 		//id := c.Param("id")
 		usr := c.PostForm("usr")
+
 		c.JSON(200, gin.H{ //返回json结构体信息
 			"delete": "pong",
 			//"id":     id,
@@ -81,6 +84,57 @@ func main() {
 				"usr": usr,
 			})
 		}
+	})
+
+	//单个文件传输
+	router.POST("UploadSingleFile", func(c *gin.Context) {
+		file, _ := c.FormFile("file") //文件流和 err
+
+		//c.SaveUploadedFile(file, "./"+file.Filename) //保存文件到本地
+		//name := c.PostForm("name")
+		in, _ := file.Open()
+		defer in.Close()
+
+		out, _ := os.Create("./" + file.Filename)
+		defer out.Close()
+
+		io.Copy(out, in)
+
+		c.Writer.Header().Add("Content-Disposition", fmt.Sprintf("attachment; filename=%s", file.Filename))
+
+		c.File("./" + file.Filename)
+
+		//c.JSON(200, gin.H{
+		//	"filename": file.Filename,
+		//	"filesize": file.Size,
+		//})
+	})
+
+	//多个文件传输
+	router.POST("UploadMultiFile", func(c *gin.Context) {
+		form, _ := c.MultipartForm() //
+		FileList := form.File["file"]
+
+		for _, item := range FileList {
+			//c.SaveUploadedFile(item, "./"+item.Filename)
+
+			in, _ := item.Open()
+			defer in.Close()
+			out, _ := os.Create("./" + item.Filename)
+			defer out.Close()
+			io.Copy(out, in)
+
+			c.Writer.Header().Add("Content-Disposition", fmt.Sprintf("attachment; filename=%s", item.Filename))
+
+			c.File("./" + item.Filename)
+
+		}
+
+		//name := c.PostForm("name")
+		//c.JSON(200, gin.H{
+		//	"filename": file.Filename,
+		//	"filesize": file.Size,
+		//})
 	})
 
 	router.Run(":10101") //1024到65536(16位二进制的最大数
